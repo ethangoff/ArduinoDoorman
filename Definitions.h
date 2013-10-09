@@ -1,0 +1,43 @@
+//Definitions.h - Arduino-Based Door Access Controller Pre-Processor Definitions
+//Ethan Goff, October 2013
+
+//Pins
+	//Input Pins
+	#define KEYPAD_PROBE_ROWA  30
+	#define KEYPAD_PROBE_ROWB  31
+	#define KEYPAD_PROBE_ROWC  32
+	#define KEYPAD_PROBE_ROWD  33
+	#define CONTROL_PANEL_OVERRIDE_IN  10
+	#define CONTROL_PANEL_PUBLICMODE_IN  11
+	#define CONTROL_PANEL_PROGRAM_IN  12
+
+
+	//Output Pins
+	#define DOOR_RELAY_CONTROL  20
+	#define KEYPAD_RECIEVE_COLUMNA  34
+	#define KEYPAD_RECIEVE_COLUMNB  35
+	#define KEYPAD_RECIEVE_COLUMNC  36
+	#define CONTROL_PANEL_PROBE 21
+
+//Settings
+	//Timeouts
+	#define INPUT_TIMEOUT 5
+	#define UNLOCK_TIMEOUT 5
+	#define PROGRAMING_TIMEOUT 30
+	#define MINUMUM_OVERRIDE_SWITCH_DURATION 1
+	#define MINUMUM_PROGRAM_SWITCH_DURATION 3
+	#define MINUMUM_PUBLICMODE_SWITCH_DURATION 1
+
+	//Memory Addressing
+	#define KEYMAP_START_ADDRESS 1
+	#define KEYMAP_POPULATED_FLAG_ADDRESS 0
+	#define KEYMAP_KEY_COUNT 4
+
+	//Default Keys
+	#define PUBLIC_ACCESS_MODE_KEY 12345
+	#define DEFAULT_EMPTY_KEY 100000
+
+//Constants
+#define INVALID_INPUT 10
+#define RESET_KEY_VALUE 11
+#define RESET_LISTENING_TIMEOUT 12
