@@ -1,11 +1,14 @@
 //MatrixKeypad.h - 4x3 Keypad Interface Class Declaration
 //Ethan Goff, October 2013
 
+#pragma once
+
 #include "C:\Program Files (x86)\Arduino\hardware\arduino\cores\arduino\arduino.h"
 
 class MatrixKeypad
 {
 public:
+    MatrixKeypad();
 	//Public Access Members
 	bool getCurrentState(); 
 	int getCurrentKeypress();
