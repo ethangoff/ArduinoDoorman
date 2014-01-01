@@ -37,7 +37,7 @@
 
 	//Default Keys
 	#define DEFAULT_KEY 1212
-	#define DEFAULT_EMPTY_KEY 100000
+	#define DEFAULT_EMPTY_KEY -1
 
 //Constants
 #define INVALID_INPUT 10

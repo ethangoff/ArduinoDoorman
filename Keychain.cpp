@@ -2,18 +2,28 @@
 //Ethan Goff, October 2013
 #include "Keychain.h"
 
+int Keychain::Keys[KEYMAP_KEY_COUNT];
+
 Keychain::Keychain()
+{}
+
+void Keychain::PrepKeys()
 {
-	 //Check whether the key map is available, load it if it is, populate it with a 
+  	 //Check whether the key map is available, load it if it is, populate it with a 
 	//	dummy array (see PopulateKeymap) if it is not
 	bool KeymapIsPopulated = false;
 	EEPROM_readAnything(KEYMAP_POPULATED_FLAG_ADDRESS, KeymapIsPopulated);
 	if(KeymapIsPopulated)
-		LoadKeymap();
+	{
+                Serial.println("A keychain exists");
+               	LoadKeychain();
+        }
 	else
-		PopulateKeymap();
+        {
+            Serial.println("No keychain Exists, writing Default...");
+	    PopulateKeymap();
+        }
 }
-
 
 //Checks if an entry is found in the Keys array or if the public key was entered
 //	while public access is enabled
@@ -21,6 +31,7 @@ bool Keychain::KeyExists(int keyAttempt)
 {
 		for(int i=0; i<KEYMAP_KEY_COUNT; i++)
 		{
+                        Serial.println(Keys[i]);
 			if(Keys[i] == keyAttempt)
 				return true;
 		}
@@ -28,7 +39,7 @@ bool Keychain::KeyExists(int keyAttempt)
 }
 
 //Writes the Keys Array to the EEPROM
-void Keychain::WriteNewKeymap()
+void Keychain::WriteNewKeychain()
 {
 	EEPROM_writeAnything(KEYMAP_START_ADDRESS, Keys);
 }
@@ -45,7 +56,7 @@ void Keychain::ProgramKey(int incidentKey)
 		if(Keys[i] == incidentKey)
 		{
 			Keys[i] = DEFAULT_EMPTY_KEY;
-			WriteNewKeymap();
+			WriteNewKeychain();
 			return;
 		}
 	}
@@ -57,16 +68,23 @@ void Keychain::ProgramKey(int incidentKey)
 		if(Keys[i] == DEFAULT_EMPTY_KEY)
 		{
 			Keys[i] = incidentKey;
-			WriteNewKeymap();
+			WriteNewKeychain();
 			return;
 		}
 	}
 }
 
 //Load a stored keymap into the Keys array
-void Keychain::LoadKeymap()
+void Keychain::LoadKeychain()
 {
 	EEPROM_readAnything(KEYMAP_START_ADDRESS, Keys);
+}
+
+
+void Keychain::ForceReset()
+{
+        bool NowPopulated = false;
+	EEPROM_writeAnything(KEYMAP_POPULATED_FLAG_ADDRESS, NowPopulated); 
 }
 
 
@@ -74,12 +92,15 @@ void Keychain::LoadKeymap()
 //	be correctly entered
 void Keychain::PopulateKeymap()
 {
+        Serial.println("writing Keymap");
 	for(int i = 0; i < KEYMAP_KEY_COUNT; i++)
 	{
-		Keys[i] = DEFAULT_EMPTY_KEY;
+          delay(500);
+          Keys[i] = DEFAULT_EMPTY_KEY;
 	}
         Keys[0] = DEFAULT_KEY;
-	WriteNewKeymap();
+                
+	WriteNewKeychain();
 	bool NowPopulated = true;
 	EEPROM_writeAnything(KEYMAP_POPULATED_FLAG_ADDRESS, NowPopulated);
 }

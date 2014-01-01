@@ -16,13 +16,15 @@ class Keychain
 {
 public:
     Keychain();
-	bool KeyExists(int keyAttempt);
+        void ForceReset();
+        void PrepKeys();
+        bool KeyExists(int keyAttempt);
 	void WriteNewKeymap();
 	void ProgramKey(int newKey);
 	void PopulateKeymap();
         void LoadKeymap();
 
 	//Globals
-	int Keys[KEYMAP_KEY_COUNT];
+	static int Keys[KEYMAP_KEY_COUNT];
         int DefaultEmptyKey;
 };

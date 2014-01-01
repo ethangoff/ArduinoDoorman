@@ -17,7 +17,7 @@ public:
 	//Public Access Members
         static Keypad * InputKeypad;
 	static SwitchController * SwitchBank;
-	//static Keychain * Keys;
+	static Keychain * Keys;
 	int getCode(const int& targetLength, const int& timeout, int seed);
 
 	void KeypadCheck();

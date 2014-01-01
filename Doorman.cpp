@@ -3,13 +3,14 @@
 
 
 SwitchController* Doorman::SwitchBank;
-//Keychain * Doorman::Keys;
+Keychain * Doorman::Keys;
 Keypad * Doorman::InputKeypad;
 
 
 //	Constructor
 Doorman::Doorman(Keypad * inputKeypad)
 {
+    //Keys->PopulateKeymap();
     InputKeypad = inputKeypad;
 }
 
@@ -75,7 +76,7 @@ void Doorman::KeypadCheck()
         Serial.print(Attempt);
         Serial.println("");
         
-        if( ((currentInput*1000)+Attempt) == 1111)
+        if( Keys->KeyExists(Attempt))
         {
           Serial.println("Correct! Opening the door...");
 	  OpenDoor();
