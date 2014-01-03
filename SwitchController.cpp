@@ -7,24 +7,25 @@
 
 bool SwitchController::OverrideActive()
 {
-	digitalWrite(CONTROL_PANEL_PROBE, HIGH);
-	bool OverrideIsActive = digitalRead(CONTROL_PANEL_OVERRIDE_IN);
 	digitalWrite(CONTROL_PANEL_PROBE, LOW);
+	bool OverrideIsActive = !digitalRead(CONTROL_PANEL_OVERRIDE_IN);
+	digitalWrite(CONTROL_PANEL_PROBE, HIGH);
 	return OverrideIsActive;
 }
 
 bool SwitchController::ProgramActive()
 {
-	digitalWrite(CONTROL_PANEL_PROBE, HIGH);
-	bool ProgramIsActive = digitalRead(CONTROL_PANEL_PROGRAM_IN);
 	digitalWrite(CONTROL_PANEL_PROBE, LOW);
+	bool ProgramIsActive = !digitalRead(CONTROL_PANEL_PROGRAM_IN);
+	digitalWrite(CONTROL_PANEL_PROBE, HIGH);
 	return ProgramIsActive;
 }
 
-bool SwitchController::PublicModeSwitchActive()
+
+bool SwitchController::PublicAccessModeIsOn()
 {
-	digitalWrite(CONTROL_PANEL_PROBE, HIGH);
-	bool PublicIsActive = digitalRead(CONTROL_PANEL_PUBLICMODE_IN);
-	digitalWrite(CONTROL_PANEL_PROBE, LOW);
-	return PublicIsActive;
+    digitalWrite(CONTROL_PANEL_PROBE, LOW);
+    bool PublicAccessIsActive = !digitalRead(PUBLIC_ACCESS_MODE_IN);
+    digitalWrite(CONTROL_PANEL_PROBE, HIGH);
+    return PublicAccessIsActive;
 }

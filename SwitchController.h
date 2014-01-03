@@ -13,6 +13,6 @@ public:
 	bool OverrideActive(); 
 
 	bool ProgramActive();
- 
-	bool PublicModeSwitchActive();
-};
+
+        bool PublicAccessModeIsOn();
+ };

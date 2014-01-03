@@ -21,18 +21,18 @@ void Keychain::PrepKeys()
 	else
         {
             Serial.println("No keychain Exists, writing Default...");
-	    PopulateKeymap();
+	    PopulateKeychain();
         }
 }
 
 //Checks if an entry is found in the Keys array or if the public key was entered
 //	while public access is enabled
-bool Keychain::KeyExists(int keyAttempt)
+bool Keychain::KeyExists(int& lookup)
 {
 		for(int i=0; i<KEYMAP_KEY_COUNT; i++)
 		{
                         Serial.println(Keys[i]);
-			if(Keys[i] == keyAttempt)
+			if(Keys[i] == lookup)
 				return true;
 		}
 		return false;
@@ -45,9 +45,14 @@ void Keychain::WriteNewKeychain()
 }
 
 //Stores a new key to the EEPROM or removes a key that already exists
-void Keychain::ProgramKey(int incidentKey)
+void Keychain::ProgramKey(int& incidentKey)
 {
-	//In the model of the program, the empty key is used as a never-allowed input
+        //Clear the LEDs so the can be used for indication of adding or removing a key
+        digitalWrite(GREEN_LED, HIGH);
+        digitalWrite(YELLOW_LED, HIGH);
+        digitalWrite(RED_LED, HIGH);
+              
+  	//In the model of the program, the empty key is used as a never-allowed input
 	//	(essentially a place holder for future keys)
 	//IFF the incident key is found in the current keymap, the key is effectively removed
 	//	and the keymap is re-written to the EEPROM
@@ -57,6 +62,15 @@ void Keychain::ProgramKey(int incidentKey)
 		{
 			Keys[i] = DEFAULT_EMPTY_KEY;
 			WriteNewKeychain();
+                        for(int i=0; i<3 ; i++)
+                        {
+                          for(int LED = GREEN_LED; LED <= RED_LED; LED++)
+                          {
+                             digitalWrite(LED, LOW);
+                             delay(100); 
+                             digitalWrite(LED, HIGH);
+                          }
+                        }
 			return;
 		}
 	}
@@ -69,6 +83,15 @@ void Keychain::ProgramKey(int incidentKey)
 		{
 			Keys[i] = incidentKey;
 			WriteNewKeychain();
+                        for(int i=0; i<3 ; i++)
+                        {
+                          for(int LED = RED_LED; LED >= GREEN_LED; LED--)
+                          {
+                             digitalWrite(LED, LOW);
+                             delay(100); 
+                             digitalWrite(LED, HIGH);
+                          }
+                        }
 			return;
 		}
 	}
@@ -90,12 +113,11 @@ void Keychain::ForceReset()
 
 //Populate the keymap with 1 default key and 3 keys that could never
 //	be correctly entered
-void Keychain::PopulateKeymap()
+void Keychain::PopulateKeychain()
 {
         Serial.println("writing Keymap");
 	for(int i = 0; i < KEYMAP_KEY_COUNT; i++)
 	{
-          delay(500);
           Keys[i] = DEFAULT_EMPTY_KEY;
 	}
         Keys[0] = DEFAULT_KEY;

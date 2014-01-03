@@ -3,7 +3,6 @@
 
 #include <EEPROM.h>
 #include <Keypad.h>
-#include "DebugTools.h"
 #include "Doorman.h"
 #include "Definitions.h"
 #include "SwitchController.h"
@@ -32,22 +31,38 @@ static Doorman * Dalton = &Doorman(&InputKeypad);
 
 
         
-//Setup Pins
+//Setup Pins and prepare the Key Map
 void setup()
 {
         Serial.begin(9600);
-	pinMode(DEBUG_A, OUTPUT);
+        
+	pinMode(GREEN_LED, OUTPUT);
+	pinMode(YELLOW_LED, OUTPUT);
+	pinMode(RED_LED, OUTPUT);
 	pinMode(DOOR_RELAY_CONTROL, OUTPUT);
 
-        digitalWrite(DEBUG_A, LOW);
+        digitalWrite(GREEN_LED, HIGH);
+        digitalWrite(YELLOW_LED, HIGH);
+        digitalWrite(RED_LED, HIGH);
+        
+        pinMode(CONTROL_PANEL_OVERRIDE_IN, INPUT);
+        digitalWrite(CONTROL_PANEL_OVERRIDE_IN, HIGH);
+        
+        pinMode(CONTROL_PANEL_PROGRAM_IN, INPUT);
+        digitalWrite(CONTROL_PANEL_PROGRAM_IN, HIGH);
+        
+        
+        pinMode(CONTROL_PANEL_PROBE, OUTPUT);
+        digitalWrite(CONTROL_PANEL_PROBE, HIGH);        
         
         digitalWrite(DOOR_RELAY_CONTROL, HIGH);
 
         Dalton->Keys->PrepKeys();
 }
 
-// Main Loop for the arduino
 void loop()
 {
-  Dalton->KeypadCheck();
+  //Ask our Doorman to update the current state of the system
+  Dalton->Update();
+  Serial.println("running");
 }

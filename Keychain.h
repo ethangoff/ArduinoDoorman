@@ -18,11 +18,11 @@ public:
     Keychain();
         void ForceReset();
         void PrepKeys();
-        bool KeyExists(int keyAttempt);
-	void WriteNewKeymap();
-	void ProgramKey(int newKey);
-	void PopulateKeymap();
-        void LoadKeymap();
+        bool KeyExists(int& lookup);
+	void WriteNewKeychain();
+	void ProgramKey(int& newKey);
+	void PopulateKeychain();
+        void LoadKeychain();
 
 	//Globals
 	static int Keys[KEYMAP_KEY_COUNT];
