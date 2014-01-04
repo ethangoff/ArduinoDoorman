@@ -8,8 +8,9 @@ Keypad * Doorman::InputKeypad;
 uint8_t Doorman::StateLED;
 bool Doorman::PublicAccessModeOn;
 bool Doorman::ProgramModeOn;
-time_t Doorman::LatchingSwitchesReferenceTime;
-time_t Doorman::StateLEDReferenceTime;
+
+unsigned long Doorman::LatchingSwitchesReferenceTime;
+unsigned long Doorman::StateLEDReferenceTime;
 
 //	Constructor
 Doorman::Doorman(Keypad * inputKeypad)
@@ -18,8 +19,9 @@ Doorman::Doorman(Keypad * inputKeypad)
     InputKeypad = inputKeypad;
     StateLED = GREEN_LED;
     PublicAccessModeOn = false;
-    LatchingSwitchesReferenceTime = now();
-    StateLEDReferenceTime = now();
+    ProgramModeOn = false;
+    LatchingSwitchesReferenceTime = millis();
+    StateLEDReferenceTime = millis();
     
 }
 
@@ -27,7 +29,7 @@ void Doorman::ProbeLatchingSwitches()
 {
   PublicAccessModeOn = RecievingPublicAccessRequest();
   ProgramModeOn = RecievingProgramRequest();
-  LatchingSwitchesReferenceTime = now();
+  LatchingSwitchesReferenceTime = millis();
 }
 
 
@@ -35,49 +37,43 @@ void Doorman::Update()
 {
    //Because testing the switches takes time (due to de-noising/debouncing),
    //  we only want to check them periodically.
-   if(now() - LatchingSwitchesReferenceTime > LATCHING_SWITCH_PROBE_PERIOD)
+   if(millis() - LatchingSwitchesReferenceTime > LATCHING_SWITCH_PROBE_PERIOD)
    {
      ProbeLatchingSwitches();
    }
 
-   //We update our indicator LED
-   if(now() - StateLEDReferenceTime > WAITING_BLINK_PERIOD)
+   //We update our indicator LED if we're not in public access mode
+   if(millis() - StateLEDReferenceTime > WAITING_BLINK_PERIOD && !PublicAccessModeOn)
    {
      digitalWrite(StateLED, !digitalRead(StateLED) );
-     StateLEDReferenceTime = now();
+     StateLEDReferenceTime = millis();
    }
     
-   //If
-   if(PublicAccessModeOn && InputKeypad->getKey() != '\0')
+   //Check if a key was recieved
+   char currentInput = InputKeypad->getKey();  //currentInput holds the 'seed' key - that is, the first key pressed by a user
+
+   if(PublicAccessModeOn && currentInput != '\0')
         OpenDoor();
-   else 
+   else if(currentInput == '\0' || currentInput == '#' || currentInput == '*')
+        return;
+   else
    {
-      //Check if a key was recieved
-      char currentInput = InputKeypad->getKey();  //currentInput holds the 'seed' key - that is, the first key pressed by a user
-      
-      //If no numerical key is pressed, break out of the keypad check
-      if(currentInput == '\0' || currentInput == '#' || currentInput == '*')
-         return;
-         
-      //Otherwise, attempt to get the rest of the code, appending it to the first key (if successful) 
-      else
-      {
+         Serial.println("Got something...");
          int Attempt = getCode(3, INPUT_TIMEOUT, int(currentInput-'0') );
          if(Attempt != RESET_LISTENING_TIMEOUT)
          {
-           //We either forward the key to the programming method or check it against the Keychain
-           if(ProgramModeOn)
+            //We either forward the key to the programming method or check it against the Keychain
+            if(ProgramModeOn)
                Keys->ProgramKey(Attempt); 
-           else if( Keys->KeyExists(Attempt) )
+            else if( Keys->KeyExists(Attempt) )
 	      OpenDoor();
-           else //If the system is not in programming mode, but the key entered isn't present, indicate so
-           {
+            else //If the system is not in programming mode, but the key entered isn't present, indicate so
+            {
               digitalWrite(RED_LED, LOW);
-              delay(500);
+              delay(WRONG_ATTEMPT_INDICATION_DURATION);
               digitalWrite(RED_LED, HIGH);              
-           }
-         }
-       }       
+            }
+         }     
    }
    
 }
@@ -95,16 +91,16 @@ int Doorman::getCode(const int& targetLength, const int& timeout, int seed = 0)
 
 	//referenceTime holds an initially arbitrary time, which is checked against
 	//	the current time to check for the elapsed difference
-	time_t referenceTime = now();
+	unsigned long referenceTime = millis();
 
 	//Look for input until the requested number of digits have been entered or the operation times out
-	while(digitsEntered < targetLength && now() - referenceTime < timeout)
+	while(digitsEntered < targetLength && millis() - referenceTime < timeout)
 	{	
            //We update our indicator LED
-           if(now() - StateLEDReferenceTime > WAITING_BLINK_PERIOD/2)
+           if(millis() - StateLEDReferenceTime > WAITING_BLINK_PERIOD/2)
            {
              digitalWrite(StateLED, !digitalRead(StateLED) );
-             StateLEDReferenceTime = now();
+             StateLEDReferenceTime = millis();
            }        
 
 		//Sample for a keypress
@@ -118,12 +114,12 @@ int Doorman::getCode(const int& targetLength, const int& timeout, int seed = 0)
 			inputAttempt*=10;
 			inputAttempt+= int(currentInput-'0');
 			digitsEntered++;
-			referenceTime = now();
+			referenceTime = millis();
        		}
 
 
 	}
-        if(now() - referenceTime >= timeout)
+        if(millis() - referenceTime >= timeout)
           return RESET_LISTENING_TIMEOUT;
         else
           return inputAttempt;
@@ -133,12 +129,7 @@ int Doorman::getCode(const int& targetLength, const int& timeout, int seed = 0)
 //Opens the door by activating the relay controlling power to the door lock
 void Doorman::OpenDoor()
 {
-  	time_t referenceTime = now();
-        time_t elapsedTime = 0;
-        time_t toggleReferenceTime = now();
-        time_t timeSinceLastToggle = 0;
-
-
+        unsigned long referenceTime = millis();
 	//Set digital output to relay contol to LOW for an ammount of time, unlatching the door lock
 	digitalWrite(DOOR_RELAY_CONTROL, LOW);
  
@@ -148,17 +139,9 @@ void Doorman::OpenDoor()
         digitalWrite(YELLOW_LED, HIGH );
         digitalWrite(RED_LED, HIGH );
         
-        while(elapsedTime < (5)) //While the latch should be open...
+        while(millis() - referenceTime < (UNLOCK_TIMEOUT)) //While the latch should be open...
         {
-            Serial.print("Door has been open for");
-            Serial.print(elapsedTime);
-            Serial.println("");
-            Serial.print("it is now");
-            Serial.print(now());
-            Serial.println("");
             //...we want to toggle the indicator LEDs at a specified rate.
-            if( timeSinceLastToggle  > 1)
-            {
                 //Sample the current state of the LEDs
                 boolean LEDState = digitalRead(GREEN_LED);
  
@@ -167,13 +150,7 @@ void Doorman::OpenDoor()
               	digitalWrite(YELLOW_LED, !LEDState );
               	digitalWrite(RED_LED, !LEDState );
                 
-                //Reset the reference time for the LEDs
-                toggleReferenceTime = now();
-            }
-            
-            //Re-calculate the times elapsed
-            elapsedTime = now() - referenceTime;
-            timeSinceLastToggle = now() - toggleReferenceTime;
+                delay(WAITING_BLINK_PERIOD);
         }
 
         //  Finally, close the door and reset all LEDs to off
@@ -211,10 +188,15 @@ bool Doorman::RecievingProgramRequest()
 		delay(MINUMUM_PROGRAM_SWITCH_DURATION);
 		if(SwitchBank->ProgramActive())
                 {
+                        Serial.println("Programming Mode On");
+                        if(!ProgramModeOn)
+                          digitalWrite(StateLED, HIGH);
                         StateLED = YELLOW_LED;
 			return true;
                 }
 	}
+        else if(ProgramModeOn)
+           digitalWrite(StateLED, HIGH);
         StateLED = GREEN_LED;
         return false;
 }
@@ -233,6 +215,7 @@ bool Doorman::RecievingPublicAccessRequest()
 		delay(MINUMUM_PUBLIC_ACCESS_SWITCH_DURATION);
 		if(SwitchBank->PublicAccessModeIsOn())
                 {
+                        Serial.println("Public Access Mode On");
                         digitalWrite(GREEN_LED, LOW);
                         return true;
                 }

@@ -67,7 +67,7 @@ void Keychain::ProgramKey(int& incidentKey)
                           for(int LED = GREEN_LED; LED <= RED_LED; LED++)
                           {
                              digitalWrite(LED, LOW);
-                             delay(100); 
+                             delay(200); 
                              digitalWrite(LED, HIGH);
                           }
                         }
@@ -88,7 +88,7 @@ void Keychain::ProgramKey(int& incidentKey)
                           for(int LED = RED_LED; LED >= GREEN_LED; LED--)
                           {
                              digitalWrite(LED, LOW);
-                             delay(100); 
+                             delay(200); 
                              digitalWrite(LED, HIGH);
                           }
                         }

@@ -50,6 +50,10 @@ void setup()
         
         pinMode(CONTROL_PANEL_PROGRAM_IN, INPUT);
         digitalWrite(CONTROL_PANEL_PROGRAM_IN, HIGH);
+
+        pinMode(PUBLIC_ACCESS_MODE_IN, INPUT);
+        digitalWrite(PUBLIC_ACCESS_MODE_IN, HIGH);        
+        
         
         
         pinMode(CONTROL_PANEL_PROBE, OUTPUT);
@@ -64,5 +68,4 @@ void loop()
 {
   //Ask our Doorman to update the current state of the system
   Dalton->Update();
-  Serial.println("running");
 }

@@ -7,7 +7,6 @@
 #include "SwitchController.h"
 #include "Keychain.h"
 #include "Definitions.h"
-#include "Time.h"
 
 class Doorman
 {
@@ -33,8 +32,8 @@ private:
 	void OpenDoor();
         static bool PublicAccessModeOn;
         static bool ProgramModeOn;
-        static time_t LatchingSwitchesReferenceTime;
-        static time_t StateLEDReferenceTime;
+        static unsigned long LatchingSwitchesReferenceTime;
+        static unsigned long StateLEDReferenceTime;
 
 
 	bool PublicAccessMode;
