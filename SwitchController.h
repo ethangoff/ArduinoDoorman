@@ -1,18 +1,21 @@
-//SwitchController.h - Switch Controller Panel Interface Class Declarations
-//Ethan Goff, October 2013
+//SwitchController.h - Switches Interface Class Declaration
+//Part of ArduinoDoorman, an Arduino-Based Access Control System
+//Ethan Goff, January 2014
+
+
 
 #pragma once
 
-#include "Arduino.h"
+#include <Arduino.h>
+#include "Definitions.h"
+
+
 
 class SwitchController
 {
 public:
 	SwitchController();
-
-	bool OverrideActive(); 
-
-	bool ProgramActive();
-
-        bool PublicAccessModeIsOn();
+	bool OverrideSwitchIsActive(); 
+	bool ProgramSwitchIsActive();
+	bool PublicAccessModeSwitchIsActive();
  };

@@ -1,19 +1,26 @@
-//PorchDoor.ino - Arduino-Based Door Access Controller Main Source
-//Ethan Goff, October 2013
+//ArduinoDoorman.ino - Main Arduino Sketch Source
+//Part of ArduinoDoorman, an Arduino-Based Access Control System
+//Ethan Goff, January 2014
+
+
+
+//Use instructions and design notes can be found in this project's ReadMe file.
 
 #include <EEPROM.h>
 #include <Keypad.h>
 #include "Doorman.h"
 #include "Definitions.h"
-#include "SwitchController.h"
 
 
 
-//Initialize the keypad
-const byte ROWS = 4; // Four rows
-const byte COLS = 3; // Three columns
+////	Begin Setup		////
 
-// Define the Keymap
+//	Initialize the keypad (which needs to be instantiated globablly and statically)
+
+const byte ROWS = 4;
+const byte COLS = 3;
+
+//Define the Keymap
 static char keymap[ROWS][COLS] = 
 {
   {'1','2','3'},
@@ -23,49 +30,67 @@ static char keymap[ROWS][COLS] =
 };
 
 // Connect keypad ROW0, ROW1, ROW2 and ROW3 to these Arduino pins.
-byte rowPins[ROWS] = { KEYPAD_PROBE_ROWA, KEYPAD_PROBE_ROWB, KEYPAD_PROBE_ROWC, KEYPAD_PROBE_ROWD };
+byte rowPins[ROWS] = { KEYPAD_INPUT_PIN_ROWA, KEYPAD_INPUT_PIN_ROWB, KEYPAD_INPUT_PIN_ROWC, KEYPAD_INPUT_PIN_ROWD };
 // Connect keypad COL0, COL1 and COL2 to these Arduino pins.
-byte colPins[COLS] = { KEYPAD_RECIEVE_COLUMNA, KEYPAD_RECIEVE_COLUMNB, KEYPAD_RECIEVE_COLUMNC }; 
+byte colPins[COLS] = { KEYPAD_OUTPUT_PIN_COLUMNA, KEYPAD_OUTPUT_PIN_COLUMNB, KEYPAD_OUTPUT_PIN_COLUMNC }; 
 Keypad InputKeypad = Keypad( makeKeymap(keymap), rowPins, colPins, ROWS, COLS );
 static Doorman * Dalton = &Doorman(&InputKeypad);
 
 
-        
-//Setup Pins and prepare the Key Map
-void setup()
+
+void PrepLEDs()
 {
-        Serial.begin(9600);
-        
-	pinMode(GREEN_LED, OUTPUT);
-	pinMode(YELLOW_LED, OUTPUT);
-	pinMode(RED_LED, OUTPUT);
-	pinMode(DOOR_RELAY_CONTROL, OUTPUT);
-
-        digitalWrite(GREEN_LED, HIGH);
-        digitalWrite(YELLOW_LED, HIGH);
-        digitalWrite(RED_LED, HIGH);
-        
-        pinMode(CONTROL_PANEL_OVERRIDE_IN, INPUT);
-        digitalWrite(CONTROL_PANEL_OVERRIDE_IN, HIGH);
-        
-        pinMode(CONTROL_PANEL_PROGRAM_IN, INPUT);
-        digitalWrite(CONTROL_PANEL_PROGRAM_IN, HIGH);
-
-        pinMode(PUBLIC_ACCESS_MODE_IN, INPUT);
-        digitalWrite(PUBLIC_ACCESS_MODE_IN, HIGH);        
-        
-        
-        
-        pinMode(CONTROL_PANEL_PROBE, OUTPUT);
-        digitalWrite(CONTROL_PANEL_PROBE, HIGH);        
-        
-        digitalWrite(DOOR_RELAY_CONTROL, HIGH);
-
-        Dalton->Keys->PrepKeys();
+	//Set up LED pins
+	pinMode(GREEN_LED_OUTPUT_PIN, OUTPUT);
+	pinMode(YELLOW_LED_OUTPUT_PIN, OUTPUT);
+	pinMode(RED_LED_OUTPUT_PIN, OUTPUT);
+	
+	//Turn all LEDs off to start
+	digitalWrite(GREEN_LED_OUTPUT_PIN, HIGH);
+	digitalWrite(YELLOW_LED_OUTPUT_PIN, HIGH);
+	digitalWrite(RED_LED_OUTPUT_PIN, HIGH);       
 }
 
+
+
+void PrepSwitches()
+{
+	//Set up and Pullup the switch inputs
+	pinMode(OVERRIDE_INPUT_PIN, INPUT);
+	digitalWrite(OVERRIDE_INPUT_PIN, HIGH);
+        
+	pinMode(PROGRAM_MODE_INPUT_PIN, INPUT);
+	digitalWrite(PROGRAM_MODE_INPUT_PIN, HIGH);
+
+	pinMode(PUBLIC_ACCESS_MODE_INPUT_PIN, INPUT);
+	digitalWrite(PUBLIC_ACCESS_MODE_INPUT_PIN, HIGH);        
+}
+
+
+
+void PrepRelay()
+{
+	//Set up the Relay Control output
+	pinMode(DOOR_RELAY_CONTROL_OUTPUT_PIN, OUTPUT);
+	digitalWrite(DOOR_RELAY_CONTROL_OUTPUT_PIN, HIGH);
+}
+
+
+
+void setup()
+{
+	PrepLEDs();
+	PrepSwitches();
+	PrepRelay();
+}
+
+////		End Setup		////
+
+
+
+//The main loop
 void loop()
 {
-  //Ask our Doorman to update the current state of the system
-  Dalton->Update();
+	//Ask our Doorman to update the current state of the system
+	Dalton->Update();
 }
