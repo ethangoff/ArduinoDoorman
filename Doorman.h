@@ -22,6 +22,7 @@ class Doorman
 public:
 	Doorman(Keypad * inputKeypad);
 	void Update();
+	void CheckForKeychainReset();
 
 private:
 	int getCode(const unsigned int& targetLength, unsigned int seed);
@@ -32,7 +33,6 @@ private:
 	bool RecievingProgramRequest();
 	bool RecievingPublicAccessRequest();
 	void LED(const unsigned int & token);
-	void ForceReset();
 
 	static Keypad * InputKeypad;
 	static SwitchController * SwitchBank;

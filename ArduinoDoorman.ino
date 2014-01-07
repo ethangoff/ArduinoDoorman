@@ -58,7 +58,7 @@ void PrepSwitches()
 	//Set up and Pullup the switch inputs
 	pinMode(OVERRIDE_INPUT_PIN, INPUT);
 	digitalWrite(OVERRIDE_INPUT_PIN, HIGH);
-        
+
 	pinMode(PROGRAM_MODE_INPUT_PIN, INPUT);
 	digitalWrite(PROGRAM_MODE_INPUT_PIN, HIGH);
 
@@ -79,9 +79,14 @@ void PrepRelay()
 
 void setup()
 {
-	PrepLEDs();
+  	PrepLEDs();
 	PrepSwitches();
 	PrepRelay();
+	//The system allows for a forced-reset of the Keychain stored in the EEPROM.
+	//	This is triggered by holding the Override Switch while the system is reset.
+        //      The Doorman must be initialized fully before we check for a request to 
+        //      reset the keychain
+        Dalton->CheckForKeychainReset();
 }
 
 ////		End Setup		////

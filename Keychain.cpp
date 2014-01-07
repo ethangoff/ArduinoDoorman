@@ -39,8 +39,10 @@ bool Keychain::KeyExists(const int& lookup)
 {
 	//Iterate through the Keychain, looking for a match with the lookup key
 	for(int i=0; i<KEYCHAIN_KEY_COUNT; i++)
+        {
 		if(Keys[i] == lookup)
 			return true;
+        }
 
 	return false;
 }

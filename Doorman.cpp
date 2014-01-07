@@ -25,11 +25,6 @@ Doorman::Doorman(Keypad * inputKeypad)
 	//	sketchinto the static instance of the Doorman class
 	InputKeypad = inputKeypad;
 
-	//The system allows for a forced-reset of the Keychain stored in the EEPROM.
-	//	This is triggered by holding the Override Switch while the system is reset.
-	if(RecievingOverrideRequest())
-		ForceReset();
-
 	//Define the other static members. The initial indicator LED, as well as both
 	//	mode booleans, are arbitrary - they are checked within the first second of
 	//	operation regardless (and at a defined interval throughout the system's uptime)
@@ -208,7 +203,7 @@ bool Doorman::RecievingProgramRequest()
 		delay(SWITCH_DEBOUNCE_DELAY);
 		//...then re-check after some de-bouncing/de-noising time
 		if(SwitchBank->ProgramSwitchIsActive())
-        {
+                {
 			//If the mode is switched on, turn off the LEDs and switch to
 			//	the yellow indicator LED to indicate the system has entered 
 			//	programming mode
@@ -223,7 +218,7 @@ bool Doorman::RecievingProgramRequest()
 	//If the mode is switched on, turn off the LEDs and switch to
 	//	the green indicator LED to indicate the system has left 
 	//	programming mode
-	else if(ProgramModeOn)
+	if(ProgramModeOn)
 	{
 		LED(FORCE_LEDS_OFF);
 		StateLED = GREEN_LED_OUTPUT_PIN;
@@ -284,7 +279,11 @@ void Doorman::LED(const unsigned int & eventToken)
 	switch (eventToken)
 	{
 		case INCORRECT_GUESS:
-			//Simply Blink the red LED once
+                        //Clear the LEDs first
+			digitalWrite(GREEN_LED_OUTPUT_PIN, HIGH );                
+			digitalWrite(YELLOW_LED_OUTPUT_PIN, HIGH );
+			digitalWrite(RED_LED_OUTPUT_PIN, HIGH );
+			//Blink the red LED once
 			digitalWrite(RED_LED_OUTPUT_PIN, LOW);
 			delay(WRONG_ATTEMPT_INDICATION_DURATION);
 			digitalWrite(RED_LED_OUTPUT_PIN, HIGH);
@@ -292,7 +291,7 @@ void Doorman::LED(const unsigned int & eventToken)
 
 
 		case TOGGLE_STATE_LED_ON_OFF:
-			//Switch the LED
+			//Switch the state LED
 			digitalWrite(StateLED, !digitalRead(StateLED) );
 			StateLEDReferenceTime = millis();
 			return;
@@ -361,8 +360,12 @@ void Doorman::LED(const unsigned int & eventToken)
 
 
 //Sets the flag telling the system to write the default keymap
-void Doorman::ForceReset()
+void Doorman::CheckForKeychainReset()
 {
-    bool NowPopulated = false;
-	EEPROM_writeAnything(KEYCHAIN_EXISTS_IN_EEPROM_FLAG_ADDRESS, NowPopulated); 
+	if(RecievingOverrideRequest())
+	{
+		bool NowPopulated = false;
+		EEPROM_writeAnything(KEYCHAIN_EXISTS_IN_EEPROM_FLAG_ADDRESS, NowPopulated);
+		Keys = &Keychain();
+	}
 }
